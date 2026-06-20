@@ -1,0 +1,50 @@
+name: "DevOps End-to-End Practice"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    steps:
+    - name: Checkout Código
+      uses: actions/checkout@v3
+
+    # Generamos llaves SSH en el runner para que Terraform las inyecte en la VM
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -N ""
+        cat ~/.ssh/id_rsa.pub
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+
+    - name: Terraform Init & Apply
+      id: tf
+      run: |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve
+        # Guardamos la IP pública en una variable del pipeline
+        echo "VM_IP=$(terraform output -raw vm_public_ip)" >> $GITHUB_ENV
+
+    # Esperamos a que la VM termine de arrancar el puerto 22 antes de lanzar Ansible
+    - name: Wait for SSH to be ready
+      run: |
+        echo "Esperando que la IP ${{ env.VM_IP }} responda..."
+        sleep 30
+
+    - name: Run Ansible Playbook
+      run: |
+        cd ansible
+        # Ejecutamos ansible pasando la IP dinámicamente en el inventario inline
+        ansible-playbook -i "${{ env.VM_IP }}," -u azureuser --private-key ~/.ssh/id_rsa playbook.yml

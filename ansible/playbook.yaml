@@ -1,0 +1,24 @@
+---
+- name: Configurar Servidor Web Nginx
+  hosts: all
+  become: yes # Ejecutar como sudo
+  tasks:
+    - name: Actualizar cache de apt
+      apt:
+        update_cache: yes
+
+    - name: Instalar Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Iniciar servicio Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Crear pagina index personalizada
+      copy:
+        content: "<h1>¡Hola! Desplegado con Terraform + GitHub Actions + Ansible en Azure</h1>"
+        dest: /var/www/html/index.html
