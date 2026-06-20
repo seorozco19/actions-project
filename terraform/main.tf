@@ -22,7 +22,8 @@ resource "azurerm_public_ip" "pip" {
   name                = "pip-lab"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
+  sku		      = "Standard"
 }
 
 # Grupo de Seguridad (Abrir puertos 22 para SSH y 80 para la Web)
