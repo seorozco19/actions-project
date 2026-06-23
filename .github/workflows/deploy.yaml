@@ -66,6 +66,7 @@ jobs:
     - name: Run Ansible Playbook
       run: |
         cd ansible
+        pwd
         # CORREGIDO: Ahora usa env.VM_PUBLIC_IP
         # Ejecutamos ansible pasando la IP dinámicamente en el inventario inline
         ansible-playbook -i "${{ env.VM_PUBLIC_IP }}," -u azureuser --private-key ~/.ssh/id_rsa playbook.yml
