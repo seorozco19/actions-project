@@ -39,15 +39,6 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
     
-    - name: 🔍 AUDITORÍA DE LLAVES (TEMPORAL)
-      run: |
-        echo "=== LLAVE PÚBLICA EN BASE64 ==="
-        echo "${{ secrets.SSH_PUBLIC_KEY }}" | base64
-        
-        echo "=== LLAVE PRIVADA (Primeras líneas modificadas) ==="
-        # Reemplazamos los guiones para engañar al filtro de GitHub y ver el texto real
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed 's/-/=/g' | head -n 5
-
     - name: Terraform Init
       id: tf
       run: |
@@ -83,7 +74,17 @@ jobs:
     - name: Run Ansible Playbook
       run: |
         cd ansible
-        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i "${{ env.VM_PUBLIC_IP }}," -u azureuser --private-key ~/.ssh/id_rsa playbook.yml
+        # 1. Forzamos el borrado de la IP en el archivo de hosts conocidos del runner por si quedó basura
+        ssh-keygen -f "~/.ssh/known_hosts" -R "${{ env.VM_PUBLIC_IP }}" 2>/dev/null || true
+        
+        # 2. Corremos Ansible obligándolo a ignorar llaves viejas y a aceptar la nueva firma RSA directamente
+        ANSIBLE_HOST_KEY_CHECKING=False \
+        ansible-playbook \
+          -i "${{ env.VM_PUBLIC_IP }}," \
+          -u azureuser \
+          --private-key ~/.ssh/id_rsa \
+          --ssh-common-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentitiesOnly=yes' \
+          playbook.yml
 
   destroy:
     name: "Destroy Infrastructure"
