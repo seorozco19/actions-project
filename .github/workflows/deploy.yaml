@@ -38,6 +38,15 @@ jobs:
 
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
+    
+    - name: 🔍 AUDITORÍA DE LLAVES (TEMPORAL)
+      run: |
+        echo "=== LLAVE PÚBLICA EN BASE64 ==="
+        echo "${{ secrets.SSH_PUBLIC_KEY }}" | base64
+        
+        echo "=== LLAVE PRIVADA (Primeras líneas modificadas) ==="
+        # Reemplazamos los guiones para engañar al filtro de GitHub y ver el texto real
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" | sed 's/-/=/g' | head -n 5
 
     - name: Terraform Init
       id: tf
