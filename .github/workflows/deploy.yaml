@@ -40,7 +40,7 @@ jobs:
       id: tf_apply
       run: |
         cd terraform
-        terraform apply -auto-approve
+        terraform apply -auto-approve -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
 
     - name: Extraer y Guardar IP Limpia para Ansible
       run: |

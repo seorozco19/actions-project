@@ -1,0 +1,38 @@
+# ==========================================
+# 1. TERRAFORM (Archivos locales de estado y binarios)
+# ==========================================
+# Ignorar la carpeta donde Terraform descarga los proveedores de Azure (pesa mucho)
+.terraform/
+
+# Ignorar archivos de estado local (ya que ahora usas el Blob Storage remoto)
+*.tfstate
+*.tfstate.*
+
+# Ignorar el archivo de bloqueo de configuración de proveedores
+.terraform.lock.hcl
+
+# Ignorar archivos donde guardas contraseñas o variables locales en tu PC
+*.tfvars
+*.tfvars.json
+
+# ==========================================
+# 2. ANSIBLE Y LLAVES (Seguridad Crítica)
+# ==========================================
+# ¡NUNCA subas tus llaves privadas SSH (.pem o id_rsa) al repositorio público!
+*.pem
+id_rsa
+id_rsa.pub
+
+# Ignorar archivos de reintento de Ansible
+*.retry
+
+# ==========================================
+# 3. ARCHIVOS DEL SISTEMA OPERATIVO / EDITORES
+# ==========================================
+# Basura que genera Windows o Mac automáticamente en las carpetas
+Thumbs.db
+.DS_Store
+
+# Carpetas ocultas de editores como VS Code
+.vscode/
+.idea/

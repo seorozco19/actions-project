@@ -88,7 +88,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 
   admin_ssh_key {
     username   = "azureuser"
-    public_key = file("~/.ssh/id_rsa.pub") # GitHub Actions generará esta llave sobre la marcha
+    public_key = var.ssh_public_key # GitHub Actions generará esta llave sobre la marcha
   }
 
   os_disk {
