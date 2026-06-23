@@ -29,14 +29,32 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v2
 
-    - name: Terraform Init & Apply
+    - name: Terraform Init
       id: tf
       run: |
         cd terraform
         terraform init
+        echo "terraform init realizado"
+
+    - name: Terraform Apply
+      id: tf_apply
+      run: |
+        cd terraform
         terraform apply -auto-approve
-        # Guardamos la IP pública en una variable del pipeline
-        echo "VM_IP=$(terraform output -raw vm_public_ip)" >> $GITHUB_ENV
+
+    - name: Extraer y Guardar IP Limpia para Ansible
+      run: |
+        # Entramos a la carpeta y extraemos ÚNICAMENTE el valor plano del output
+        VM_IP=$(cd terraform && terraform output -raw vm_public_ip)
+        
+        # Guardamos en el archivo de entorno con el formato correcto LLAVE=VALOR
+        echo "VM_PUBLIC_IP=$VM_IP" >> $GITHUB_ENV
+
+    - name: Verificar IP en el siguiente paso
+      run: |
+        # Con esto validas que se guardó de forma perfecta y sin basura de debug
+        echo "La IP capturada es: ${{ env.VM_PUBLIC_IP }}"
+
 
     # Esperamos a que la VM termine de arrancar el puerto 22 antes de lanzar Ansible
     - name: Wait for SSH to be ready
