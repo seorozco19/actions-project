@@ -77,7 +77,7 @@ resource "azurerm_network_interface_security_group_association" "assoc" {
 
 # La Máquina Virtual Linux (Ubuntu)
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "vm-devops-lab"
+  name                = "vm-devops-lab-v2"
   resource_group_name = azurerm_resource_group.rg.name
   location            = azurerm_resource_group.rg.location
   size                = "Standard_D2s_v7" # Tamaño económico para el lab
