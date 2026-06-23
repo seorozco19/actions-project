@@ -43,14 +43,18 @@ jobs:
         terraform apply -auto-approve -var="ssh_public_key=${{ secrets.SSH_PUBLIC_KEY }}"
     - name: Extraer y Guardar IP Limpia para Ansible
       run: |
-        # Extraemos ÚNICAMENTE el valor plano del output de Terraform
-        VM_IP=$(terraform -chdir=terraform output -raw vm_public_ip | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+        # Ejecutamos el comando enviando cualquier log residual de debug a la basura (2>/dev/null)
+        RAW_IP=$(terraform -chdir=terraform output -raw vm_public_ip 2>/dev/null | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' || true)
         
-        # Guardamos en el archivo de entorno con el formato correcto LLAVE=VALOR
-        echo "VM_PUBLIC_IP=$VM_IP" >> $GITHUB_ENV
+        # Limpiamos cualquier salto de línea invisible que Bash pueda arrastrar
+        CLEAN_IP=$(echo "$RAW_IP" | tr -d '\r\n[:space:]')
+        
+        # Escribimos usando la sintaxis heredada segura para evitar bloqueos de formato
+        echo "VM_PUBLIC_IP=${CLEAN_IP}" >> "$GITHUB_ENV"
+
     - name: Verificar IP en el siguiente paso
       run: |
-        echo "La IP capturada es: ${{ env.VM_PUBLIC_IP }}"
+        echo "La IP guardada con éxito es: ${{ env.VM_PUBLIC_IP }}"
 
     # Esperamos a que la VM termine de arrancar el puerto 22 antes de lanzar Ansible
     - name: Wait for SSH to be ready
