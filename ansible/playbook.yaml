@@ -1,7 +1,7 @@
 ---
 - name: Configurar Servidor Web Nginx
   hosts: all
-  become: yes # Ejecutar como sudo
+  become: true # Ejecutar como sudo
   tasks:
     - name: Actualizar cache de apt
       apt:
