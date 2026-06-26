@@ -65,6 +65,13 @@ jobs:
         echo "La IP guardada con éxito es: ${{ env.VM_PUBLIC_IP }}"
 
     # Esperamos a que la VM termine de arrancar el puerto 22 antes de lanzar Ansible
+    - name: Configurar Llave Privada SSH para Ansible
+      run: |
+          mkdir -p ~/.ssh
+          # Guardamos la llave privada RSA real
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # Permisos estrictos para que SSH no la ignore por ser insegura
+          chmod 600 ~/.ssh/id_rsa
     - name: Wait for SSH to be ready
       run: |
         # CORREGIDO: Ahora usa env.VM_PUBLIC_IP
@@ -78,7 +85,7 @@ jobs:
         ssh-keygen -f "~/.ssh/known_hosts" -R "${{ env.VM_PUBLIC_IP }}" 2>/dev/null || true
         
         # 2. Corremos Ansible obligándolo a ignorar llaves viejas y a aceptar la nueva firma RSA directamente
-        ANSIBLE_HOST_KEY_CHECKING=False \
+        SSH_AUTH_SOCK="" ANSIBLE_HOST_KEY_CHECKING=False \
         ansible-playbook \
           -i "${{ env.VM_PUBLIC_IP }}," \
           -u azureuser \
